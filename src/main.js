@@ -17,6 +17,51 @@ const connectionPool = mariadb.createPool({
 
 let connection;
 
+async function beautifulPokemonResult(list) {
+
+    let listType = []
+
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query("SELECT * FROM type");
+        connection.end();
+
+
+        rows.forEach(element => {
+            listType.push({
+                'name': element.type_name
+            })
+        });
+
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+
+    let pokemon = []
+
+    list.forEach(element => {
+
+        if (element.pokemon_type_2) {
+            pokemon.push({
+                'id': element.pokemon_id,
+                'name': element.pokemon_name,
+                'type1': listType[element.pokemon_type_1 - 1].name,
+                'type2': listType[element.pokemon_type_2 - 1].name
+            })
+        } else {
+            pokemon.push({
+                'id': element.pokemon_id,
+                'name': element.pokemon_name,
+                'type1': listType[element.pokemon_type_1 - 1].name
+            })
+        }
+    })
+
+    return pokemon;
+}
+
 async function getPokemonUnobtained() {
     try {
         connection = await connectionPool.getConnection();
@@ -35,7 +80,7 @@ async function getPokemonUnobtainedByName(name) {
         connection = await connectionPool.getConnection();
         const rows = await connection.query(`SELECT * FROM pokemon WHERE pokemon_shiny_lock = 0 AND pokemon_obtained = 0 AND pokemon_name='${name}'`);
         connection.end();
-        return rows;
+        return await beautifulPokemonResult(rows);
     }
     catch (error) {
         console.log(error);
@@ -50,6 +95,8 @@ async function countPokemonByType() {
     try {
         connection = await connectionPool.getConnection();
         const rows = await connection.query("SELECT * FROM type");
+        connection.end();
+
 
         rows.forEach(element => {
             countType.push({
@@ -94,6 +141,7 @@ async function countPokemonByTypeWithoutDLC() {
     try {
         connection = await connectionPool.getConnection();
         const rows = await connection.query("SELECT * FROM type");
+        connection.end();
 
         rows.forEach(element => {
             countType.push({
@@ -149,7 +197,7 @@ app.get('/unobtained/count', async (req, res) => {
 
     const pokemon = await countPokemonByTypeWithoutDLC()
 
-    res.send(pokemon) 
+    res.send(pokemon)
 })
 
 app.get('/unobtained/count/dlc', async (req, res) => {
