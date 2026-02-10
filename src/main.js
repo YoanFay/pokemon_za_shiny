@@ -30,6 +30,19 @@ async function getPokemonUnobtained() {
     }
 }
 
+async function getPokemonUnobtainedByName(name) {
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`SELECT * FROM pokemon WHERE pokemon_shiny_lock = 0 AND pokemon_obtained = 0 AND pokemon_name='${name}'`);
+        connection.end();
+        return rows;
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+}
+
 async function countPokemonByType() {
 
     const countType = []
@@ -121,6 +134,13 @@ async function countPokemonByTypeWithoutDLC() {
 app.get('/unobtained', async (req, res) => {
 
     const pokemon = await getPokemonUnobtained()
+
+    res.send(pokemon)
+})
+
+app.get('/unobtained/pokemon/:name', async (req, res) => {
+
+    const pokemon = await getPokemonUnobtainedByName(req.params.name)
 
     res.send(pokemon)
 })
