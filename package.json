@@ -1,0 +1,25 @@
+{
+  "name": "pokemon_za_shiny",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoanFay/pokemon_za_shiny.git"
+  },
+  "author": "YoanF",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YoanFay/pokemon_za_shiny/issues"
+  },
+  "homepage": "https://github.com/YoanFay/pokemon_za_shiny#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11"
+  }
+}
