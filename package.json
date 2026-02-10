@@ -20,6 +20,7 @@
   "homepage": "https://github.com/YoanFay/pokemon_za_shiny#readme",
   "dependencies": {
     "express": "^5.2.1",
+    "mariadb": "^3.4.5",
     "nodemon": "^3.1.11"
   }
 }
