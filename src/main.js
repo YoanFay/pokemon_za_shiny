@@ -4,6 +4,9 @@ import { loadEnvFile } from 'node:process'
 
 loadEnvFile('./.env');
 
+const app = express();
+const appPort = 3000
+
 const connectionPool = mariadb.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -14,9 +17,25 @@ const connectionPool = mariadb.createPool({
 
 let connection;
 
-const app = express();
+async function getPokemonUnobtained() {
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query("SELECT * FROM pokemon WHERE pokemon_shiny_lock = 0 AND pokemon_obtained = 0");
+        connectionPool.end();
+        return rows;
+    }
+    catch (error) {
+        console.log(error);
+        connectionPool.end();
+    }
+}
 
-const appPort = 3000
+app.get('/unobtained', async (req, res) => {
+
+    const pokemon = await getPokemonUnobtained()
+    
+    res.send(pokemon)
+})
 
 app.listen(appPort, () => {
     console.log(`app launched on port ${appPort}`);
