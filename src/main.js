@@ -75,6 +75,34 @@ async function getPokemonUnobtained() {
     }
 }
 
+async function setPokemonObtained(id) {
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`UPDATE pokemon SET pokemon_obtained = 1 WHERE pokemon_id = ${id}`);
+        connection.end();
+        return true;
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+        return false;
+    }
+}
+
+async function setPokemonUnobtained(id) {
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`UPDATE pokemon SET pokemon_obtained = 0 WHERE pokemon_id = ${id}`);
+        connection.end();
+        return true;
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+        return false;
+    }
+}
+
 async function getPokemonUnobtainedByName(name) {
     try {
         connection = await connectionPool.getConnection();
@@ -189,6 +217,20 @@ app.get('/unobtained', async (req, res) => {
 app.get('/unobtained/pokemon/:name', async (req, res) => {
 
     const pokemon = await getPokemonUnobtainedByName(req.params.name)
+
+    res.send(pokemon)
+})
+
+app.get('/unobtained/pokemon/catch/:id', async (req, res) => {
+
+    const pokemon = await setPokemonObtained(req.params.id)
+
+    res.send(pokemon)
+})
+
+app.get('/unobtained/pokemon/uncatch/:id', async (req, res) => {
+
+    const pokemon = await setPokemonUnobtained(req.params.id)
 
     res.send(pokemon)
 })
