@@ -75,6 +75,62 @@ async function getPokemonUnobtained() {
     }
 }
 
+async function getPokemonUnobtainedByType(type) {
+
+    let id = ""
+
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`SELECT * FROM type WHERE type_name = '${type}'`);
+        connection.end();
+
+        id = rows[0].type_id
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`SELECT * FROM pokemon WHERE pokemon_shiny_lock = 0 AND pokemon_obtained = 0 AND (pokemon_type_1 = ${id} OR pokemon_type_2 = ${id})`);
+        connection.end();
+        return beautifulPokemonResult(rows);
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+}
+
+async function getPokemonUnobtainedByTypeWithoutDlc(type) {
+
+    let id = ""
+
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`SELECT * FROM type WHERE type_name = '${type}'`);
+        connection.end();
+
+        id = rows[0].type_id
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+
+    try {
+        connection = await connectionPool.getConnection();
+        const rows = await connection.query(`SELECT * FROM pokemon WHERE pokemon_shiny_lock = 0 AND pokemon_obtained = 0 AND (pokemon_type_1 = ${id} OR pokemon_type_2 = ${id}) AND pokemon_id < 231`);
+        connection.end();
+        return beautifulPokemonResult(rows);
+    }
+    catch (error) {
+        console.log(error);
+        connection.end();
+    }
+}
+
 async function setPokemonObtained(id) {
     try {
         connection = await connectionPool.getConnection();
@@ -152,8 +208,18 @@ async function countPokemonByType() {
             }
         });
 
+        const listType = {}
+
+        countType.sort(function (b, a) {
+            return a.count - b.count;
+        });
+
+        countType.forEach(element => {
+            listType[element.name] = element.count
+        })
+
         connection.end();
-        return countType;
+        return listType;
 
     }
     catch (error) {
@@ -197,8 +263,18 @@ async function countPokemonByTypeWithoutDLC() {
             }
         });
 
+        const listType = {}
+
+        countType.sort(function (b, a) {
+            return a.count - b.count;
+        });
+
+        countType.forEach(element => {
+            listType[element.name] = element.count
+        })
+
         connection.end();
-        return countType;
+        return listType;
 
     }
     catch (error) {
@@ -217,6 +293,20 @@ app.get('/unobtained', async (req, res) => {
 app.get('/unobtained/pokemon/:name', async (req, res) => {
 
     const pokemon = await getPokemonUnobtainedByName(req.params.name)
+
+    res.send(pokemon)
+})
+
+app.get('/unobtained/type/:name', async (req, res) => {
+
+    const pokemon = await getPokemonUnobtainedByTypeWithoutDlc(req.params.name)
+
+    res.send(pokemon)
+})
+
+app.get('/unobtained/type/:name/dlc', async (req, res) => {
+
+    const pokemon = await getPokemonUnobtainedByType(req.params.name)
 
     res.send(pokemon)
 })
